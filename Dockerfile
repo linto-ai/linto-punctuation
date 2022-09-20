@@ -36,4 +36,3 @@ HEALTHCHECK CMD ./healthcheck.sh
 
 ENV TEMP=/usr/src/app/tmp
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["serve"]

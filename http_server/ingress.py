@@ -1,55 +1,63 @@
 #!/usr/bin/env python3
 
-import os
-from time import time
-import logging
 import json
+import logging
+
 import requests
-
-from flask import Flask, request, abort, Response, json
-
-from serving import GunicornServing
 from confparser import createParser
+from flask import Flask, Response, json, request
+from serving import GunicornServing
 from swagger import setupSwaggerUI
+
 from punctuation import logger
 
-app = Flask("__stt-standalone-worker__")
+app = Flask("__punctuation-worker__")
 
-@app.route('/healthcheck', methods=['GET'])
+
+@app.route("/healthcheck", methods=["GET"])
 def healthcheck():
     return json.dumps({"healthcheck": "OK"}), 200
 
-@app.route("/oas_docs", methods=['GET'])
+
+@app.route("/oas_docs", methods=["GET"])
 def oas_docs():
     return "Not Implemented", 501
 
-@app.route('/punctuation', methods=['POST'])
-def transcribe():
+
+@app.route("/punctuation", methods=["POST"])
+def punctuate():
     try:
-        logger.info('Punctuation request received')
+        logger.info("Punctuation request received")
         return_json = False
-        if request.headers.get('accept').lower() == 'application/json':
+        if request.headers.get("accept").lower() == "application/json":
             return_json = True
-        elif not request.headers.get('accept').lower() == 'text/plain':
-            raise ValueError('Not accepted header')
-            
+        elif not request.headers.get("accept").lower() == "text/plain":
+            raise ValueError("Not accepted header")
+
         sentences = request.json.get("sentences", [])
-        
+        if not sentences:
+            return "", 200
 
         # Fetch model name
         try:
-            result = requests.get("http://localhost:8081/models", 
-                                headers={"accept": "application/json",},)
+            result = requests.get(
+                "http://localhost:8081/models",
+                headers={
+                    "accept": "application/json",
+                },
+            )
             models = json.loads(result.text)
             model_name = models["models"][0]["modelName"]
         except:
             raise Exception("Failed to fetch model name")
 
         punctuated_sentences = []
-        for i, sentence in enumerate(sentences):
-            result = requests.post("http://localhost:8080/predictions/{}".format(model_name),
-                                headers={'content-type': 'application/octet-stream'},
-                                data=sentence.strip().encode('utf-8'))
+        for sentence in sentences:
+            result = requests.post(
+                "http://localhost:8080/predictions/{}".format(model_name),
+                headers={"content-type": "application/octet-stream"},
+                data=sentence.strip().encode("utf-8"),
+            )
             if result.status_code == 200:
                 punctuated_sentence = result.text
                 # First letter in capital
@@ -59,31 +67,34 @@ def transcribe():
                 raise Exception(result.text)
         if return_json:
             return {"punctuated_sentences": punctuated_sentences}, 200
-        else:
-            return ". ".join(punctuated_sentences)
-        return response, 200
+
+        return " ".join(punctuated_sentences)
 
     except ValueError as error:
         return str(error), 400
-    except Exception as e:
-        logger.error(e)
-        return 'Server Error: {}'.format(str(e)), 500
+    except Exception as error:
+        logger.error(error)
+        return "Server Error: {}".format(str(error)), 500
+
 
 # Rejected request handlers
 @app.errorhandler(405)
-def method_not_allowed(error):
-    return 'The method is not allowed for the requested URL', 405
+def method_not_allowed(_):
+    return "The method is not allowed for the requested URL", 405
+
 
 @app.errorhandler(404)
-def page_not_found(error):
-    return 'The requested URL was not found', 404
+def page_not_found(_):
+    return "The requested URL was not found", 404
+
 
 @app.errorhandler(500)
 def server_error(error):
     logger.error(error)
-    return 'Server Error', 500
+    return "Server Error", 500
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     logger.info("Startup...")
 
     parser = createParser()
@@ -96,9 +107,14 @@ if __name__ == '__main__':
             logger.debug("Swagger UI set.")
     except Exception as e:
         logger.warning("Could not setup swagger: {}".format(str(e)))
-    
-    serving = GunicornServing(app, {'bind': '{}:{}'.format("0.0.0.0", args.service_port),
-                                    'workers': args.workers,})
+
+    serving = GunicornServing(
+        app,
+        {
+            "bind": f"0.0.0.0:{args.service_port}",
+            "workers": args.workers,
+        },
+    )
     logger.info(args)
     try:
         serving.run()

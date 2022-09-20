@@ -13,13 +13,13 @@ The punctuation service relies on a BERT model.
 We provide some models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
 
 ### Docker
-The transcription service requires docker up and running.
+The punctuation service requires docker up and running.
 
 ### (micro-service) Service broker
 The punctuation only entry point in job mode are tasks posted on a message broker. Supported message broker are RabbitMQ, Redis, Amazon SQS.
 
-## Deploy linto-platform-stt
-linto-platform-stt can be deployed two ways:
+## Deploy linto-platform-punctuation
+linto-platform-punctuation can be deployed two ways:
 * As a standalone punctuation service through an HTTP API.
 * As a micro-service connected to a message broker.
 
@@ -79,7 +79,7 @@ linto-platform-punctuation:latest
 | MODEL_PATH | Your localy available model (.mar) | /my/path/to/models/punctuation.mar |
 | SERVICES_BROKER | Service broker uri | redis://my_redis_broker:6379 |
 | BROKER_PASS | Service broker password (Leave empty if there is no password) | my_password |
-| LANGUAGE | Transcription language | en-US |
+| LANGUAGE | Punctuation language | en-US |
 | CONCURRENCY | Number of worker (1 worker = 1 cpu) | [ 1 -> numberOfCPU] |
 
 ## Usages
@@ -96,7 +96,7 @@ Returns "1" if healthcheck passes.
 
 #### /punctuation
 
-Transcription API
+Punctuation API
 
 * Method: POST
 * Response content: text/plain or application/json
@@ -125,7 +125,7 @@ The /docs route offers a OpenAPI/swagger interface.
 
 ### Through the message broker
 
-STT-Worker accepts requests with the following arguments:
+Punctuation-Worker accepts requests with the following arguments:
 ```file_path: str, with_metadata: bool```
 
 * <ins>text</ins>: (str or list) A sentence or a list of sentences.
