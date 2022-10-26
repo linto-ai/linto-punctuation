@@ -12,7 +12,7 @@ LinTO-platform-punctuation can either be used as a standalone punctuation servic
 * [Usage](#usages)
   * [HTTP API](#http-api)
     * [/healthcheck](#healthcheck)
-    * [/punctation](#punctuation)
+    * [/punctuation](#punctuation)
     * [/docs](#docs)
   * [Using celery](#using-celery)
 
