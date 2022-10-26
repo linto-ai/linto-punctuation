@@ -102,7 +102,7 @@ Fill the .env with your values.
 | BROKER_PASS | Service broker password (Leave empty if there is no password) | my_password |
 | QUEUE_NAME | (Optionnal) overide the generated queue's name (See Queue name bellow) | my_queue |
 | SERVICE_NAME | Service's name | punctuation-ml |
-| LANGUAGE | Language code as a BCP-47 code | en-US or * or languages separated by "|" |
+| LANGUAGE | Language code as a BCP-47 code | en-US or * or languages separated by "\|" |
 | MODEL_INFO | Human readable description of the model | "Bert based model for french punctuation prediction" | 
 | CONCURRENCY | Number of worker (1 worker = 1 cpu) | >1 |
 
@@ -130,7 +130,7 @@ networks:
     external: true
 ```
 
-**2- Run with docker compose**
+**3- Run with docker compose**
 
 ```bash
 docker stack deploy --resolve-image always --compose-file docker-compose.yml your_stack
