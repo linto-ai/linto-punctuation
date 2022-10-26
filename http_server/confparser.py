@@ -25,7 +25,9 @@ def createParser() -> argparse.ArgumentParser:
     )
 
     # SWAGGER
-    parser.add_argument("--swagger_url", type=str, help="Swagger interface url", default="/docs")
+    parser.add_argument(
+        "--swagger_url", type=str, help="Swagger interface url", default="/docs"
+    )
     parser.add_argument(
         "--swagger_prefix",
         type=str,

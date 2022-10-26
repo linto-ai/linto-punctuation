@@ -5,7 +5,7 @@ import logging
 
 import requests
 from confparser import createParser
-from flask import Flask, Response, json, request
+from flask import Flask, json, request
 from serving import GunicornServing
 from swagger import setupSwaggerUI
 
@@ -61,7 +61,9 @@ def punctuate():
             if result.status_code == 200:
                 punctuated_sentence = result.text
                 # First letter in capital
-                punctuated_sentence = punctuated_sentence[0].upper() + punctuated_sentence[1:]
+                punctuated_sentence = (
+                    punctuated_sentence[0].upper() + punctuated_sentence[1:]
+                )
                 punctuated_sentences.append(punctuated_sentence)
             else:
                 raise Exception(result.text)

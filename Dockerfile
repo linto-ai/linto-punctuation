@@ -1,6 +1,7 @@
-FROM python:3.8
-LABEL maintainer="stanfous@linagora.com, rbaraglia@linagora.com"
+FROM python:3.9
+LABEL maintainer="rbaraglia@linagora.com"
 ENV PYTHONUNBUFFERED TRUE
+ENV IMAGE_NAME linto-platform-diarization
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -28,8 +29,11 @@ COPY punctuation /usr/src/app/punctuation
 RUN mkdir /usr/src/app/model-store
 RUN mkdir -p /usr/src/app/tmp
 COPY config.properties /usr/src/app/config.properties
-
+COPY RELEASE.md ./
 COPY docker-entrypoint.sh wait-for-it.sh healthcheck.sh ./
+
+# Grep CURRENT VERSION
+RUN export VERSION=$(awk -v RS='' '/#/ {print; exit}' RELEASE.md | head -1 | sed 's/#//' | sed 's/ //')
 
 ENV PYTHONPATH="${PYTHONPATH}:/usr/src/app/punctuation"
 HEALTHCHECK CMD ./healthcheck.sh

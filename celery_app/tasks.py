@@ -44,4 +44,8 @@ def punctuation_task(self, text: Union[str, list]):
         punctuated_sentence = punctuated_sentence[0].upper() + punctuated_sentence[1:]
         punctuated_sentences.append(punctuated_sentence)
 
-    return punctuated_sentences[0] if len(punctuated_sentences) == 1 else punctuated_sentences
+    return (
+        punctuated_sentences[0]
+        if len(punctuated_sentences) == 1
+        else punctuated_sentences
+    )
