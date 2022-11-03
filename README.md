@@ -1,27 +1,41 @@
 # LINTO-PLATFORM-PUNCTUATION
-LinTO-platform-punctuation is the punctuation service within the [LinTO stack](https://github.com/linto-ai/linto-platform-stack).
+LinTO-platform-punctuation is a LinTO service for punctuation prediction. It predicts punctuation from raw text or raw transcription.
 
-The Punctuation is configured with an .mar BERT model.
+LinTO-platform-punctuation can either be used as a standalone punctuation service or deployed as a micro-service.
 
-LinTO-platform-puntuation can either be used as a standalone punctuation service or deployed within a micro-services infrastructure using a message broker connector.
+## Table of content
+* [Prerequisites](#pre-requisites)
+  * [Models](#models)
+* [Deploy](#deploy)
+  * [HTTP](#http-api)
+  * [MicroService](#micro-service)
+* [Usage](#usages)
+  * [HTTP API](#http-api)
+    * [/healthcheck](#healthcheck)
+    * [/punctuation](#punctuation)
+    * [/docs](#docs)
+  * [Using celery](#using-celery)
+
+* [License](#license)
+***
 
 ## Pre-requisites
 
-### Model
-The punctuation service relies on a BERT model.
+### Models
+The punctuation service relies on a trained punctuation prediction model.
 
-We provide some models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
+We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
 
 ### Docker
-The transcription service requires docker up and running.
+The punctuation service requires docker up and running.
 
 ### (micro-service) Service broker
-The punctuation only entry point in job mode are tasks posted on a message broker. Supported message broker are RabbitMQ, Redis, Amazon SQS.
+The punctuation only entry point in job mode are tasks posted on a REDIS message broker using [Celery](https://github.com/celery/celery). 
 
-## Deploy linto-platform-stt
-linto-platform-stt can be deployed two ways:
+## Deploy
+linto-platform-punctuation can be deployed two different ways:
 * As a standalone punctuation service through an HTTP API.
-* As a micro-service connected to a message broker.
+* As a micro-service connected to a task queue.
 
 **1- First step is to build the image:**
 
@@ -31,56 +45,122 @@ cd linto-platform-punctuation
 docker build . -t linto-platform-punctuation:latest
 ```
 
+or 
+```bash
+docker pull registry.linto.ai/lintoai/linto-platform-punctuation:latest
+```
+
 **2- Download the models**
 
 Have the punctuation model (.mar) ready at MODEL_PATH.
 
-### HTTP API
+### HTTP
+
+**1- Fill the .env**
+```bash
+cp .env_default_http .env
+```
+
+Fill the .env with your values.
+
+**Parameters:**
+| Variables | Description | Example |
+|:-|:-|:-|
+| SERVICE_NAME | The service's name | my_punctuation_service |
+| CONCURRENCY | Number of worker | > 1 |
+
+**2- Run with docker**
 
 ```bash
 docker run --rm \
 -v MODEL_PATH:/usr/src/app/model-store/punctuation.mar \
---env CONCURRENCY=1 \
---env LANGUAGE=fr_FR \
---env SERVICE_MODE=http \
+-p HOST_SERVING_PORT:80 \
+--env-file .env \
 linto-platform-punctuation:latest
 ```
 
 This will run a container providing an http API binded on the host HOST_SERVING_PORT port.
 
-**Parameters:**
-| Variables | Description | Example |
-|:-|:-|:-|
-| MODEL_PATH | Your localy available model (.mar) | /my/path/to/models/punctuation.mar |
-| LANGUAGE | Language code as a BCP-47 code  | en-US, fr_FR, ... |
-| CONCURRENCY | Number of worker | 1 |
 
-### Micro-service within LinTO-Platform stack
->LinTO-platform-punctuation can be deployed within the linto-platform-stack through the use of linto-platform-services-manager. Used this way, the container spawn celery worker waiting for punctuation task on a message broker.
->LinTO-platform-punctuation in task mode is not intended to be launch manually.
->However, if you intent to connect it to your custom message's broker here are the parameters:
+### Micro-service
+>LinTO-platform-punctuation can be deployed as a microservice. Used this way, the container spawn celery workers waiting for punctuation tasks on a dedicated task queue.
+>LinTO-platform-punctuation in task mode requires a configured REDIS broker.
 
-You need a message broker up and running at MY_SERVICE_BROKER.
+You need a message broker up and running at MY_SERVICE_BROKER. Instance are typically deployed as services in a docker swarm using the docker compose command:
 
+**1- Fill the .env**
 ```bash
-docker run --rm \
--v MODEL_PATH:/usr/src/app/model-store/punctuation.mar \
---env SERVICES_BROKER=redis://MY_BROKER:BROKER_PORT \
---env BROKER_PASS=password \
---env CONCURRENCY=1 \
---env LANGUAGE=fr_FR \
---env SERVICE_MODE=task \
-linto-platform-punctuation:latest
+cp .env_default_task .env
 ```
 
+Fill the .env with your values.
+
 **Parameters:**
 | Variables | Description | Example |
 |:-|:-|:-|
-| MODEL_PATH | Your localy available model (.mar) | /my/path/to/models/punctuation.mar |
 | SERVICES_BROKER | Service broker uri | redis://my_redis_broker:6379 |
 | BROKER_PASS | Service broker password (Leave empty if there is no password) | my_password |
-| LANGUAGE | Transcription language | en-US |
-| CONCURRENCY | Number of worker (1 worker = 1 cpu) | [ 1 -> numberOfCPU] |
+| QUEUE_NAME | (Optionnal) overide the generated queue's name (See Queue name bellow) | my_queue |
+| SERVICE_NAME | Service's name | punctuation-ml |
+| LANGUAGE | Language code as a BCP-47 code | en-US or * or languages separated by "\|" |
+| MODEL_INFO | Human readable description of the model | "Bert based model for french punctuation prediction" | 
+| CONCURRENCY | Number of worker (1 worker = 1 cpu) | >1 |
+
+> Do not use spaces or character "_" for SERVICE_NAME or language.
+
+**2- Fill the docker-compose.yml**
+
+`#docker-compose.yml`
+```yaml
+version: '3.7'
+
+services:
+  punctuation-service:
+    image: linto-platform-punctuation:latest
+    volumes:
+      - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/punctuation.mar
+    env_file: .env
+    deploy:
+      replicas: 1
+    networks:
+      - your-net
+
+networks:
+  your-net:
+    external: true
+```
+
+**3- Run with docker compose**
+
+```bash
+docker stack deploy --resolve-image always --compose-file docker-compose.yml your_stack
+```
+
+**Queue name:**
+
+By default the service queue name is generated using SERVICE_NAME and LANGUAGE: `punctuation_{LANGUAGE}_{SERVICE_NAME}`.
+
+The queue name can be overided using the QUEUE_NAME env variable. 
+
+**Service discovery:**
+
+As a micro-service, the instance will register itself in the service registry for discovery. The service information are stored as a JSON object in redis's db0 under the id `service:{HOST_NAME}`.
+
+The following information are registered:
+
+```json
+{
+  "service_name": $SERVICE_NAME,
+  "host_name": $HOST_NAME,
+  "service_type": "punctuation",
+  "service_language": $LANGUAGE,
+  "queue_name": $QUEUE_NAME,
+  "version": "1.2.0", # This repository's version
+  "info": "Bert Based Punctuation model for french punctuation prediction",
+  "last_alive": 65478213,
+  "concurrency": 1
+}
+```
 
 ## Usages
 
@@ -96,7 +176,7 @@ Returns "1" if healthcheck passes.
 
 #### /punctuation
 
-Transcription API
+Punctuation API
 
 * Method: POST
 * Response content: text/plain or application/json
@@ -123,10 +203,10 @@ Return the punctuated text as a json object structured as follows:
 #### /docs
 The /docs route offers a OpenAPI/swagger interface. 
 
-### Through the message broker
+### Using Celery
 
-STT-Worker accepts requests with the following arguments:
-```file_path: str, with_metadata: bool```
+Punctuation-Worker accepts celery tasks with the following arguments:
+```text: Union[str, List[str]]```
 
 * <ins>text</ins>: (str or list) A sentence or a list of sentences.
 
