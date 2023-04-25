@@ -61,9 +61,10 @@ def punctuate():
             if result.status_code == 200:
                 punctuated_sentence = result.text
                 # First letter in capital
-                punctuated_sentence = (
-                    punctuated_sentence[0].upper() + punctuated_sentence[1:]
-                )
+                if len(punctuated_sentence):
+                    punctuated_sentence = (
+                        punctuated_sentence[0].upper() + punctuated_sentence[1:]
+                    )
                 punctuated_sentences.append(punctuated_sentence)
             else:
                 raise Exception(result.text)

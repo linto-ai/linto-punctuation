@@ -41,7 +41,9 @@ def punctuation_task(self, text: Union[str, list]):
         else:
             print("Failed to predict punctuation on sentence: >{sentence}<")
             punctuated_sentence = sentence
-        punctuated_sentence = punctuated_sentence[0].upper() + punctuated_sentence[1:]
+        # First letter in capital
+        if len(punctuated_sentence):
+            punctuated_sentence = punctuated_sentence[0].upper() + punctuated_sentence[1:]
         punctuated_sentences.append(punctuated_sentence)
 
     return (
