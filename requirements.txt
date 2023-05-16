@@ -1,18 +1,12 @@
-captum>=0.3.1
 celery[redis,auth,msgpack]>=4.4.7
-pandas>=1.1.5
 flask>=1.1.2
 flask-cors>=3.0.10
 flask-swagger-ui>=3.36.0
-pyyaml>=5.4.1
+gevent>=22.10.2 # NOCOMMIT
+waitress>=2.1.2 # NOCOMMIT
 gunicorn>=20.1.0
-numpy>=1.19.5
-sklearn
-supervisor>=4.2.2
-transformers==3.0.2
-torch>=1.7.1
-torch-model-archiver>=0.3.0
-torchserve>=0.3.0
-torchtext>=0.8.1
-torchvision>=0.8.2
-redis
+git+https://github.com/benob/mosestokenizer.git
+numpy==1.19.5
+regex==2021.8.28
+torch==1.9.0+cpu # NOCOMMIT : use cu111?
+transformers==4.10.0

@@ -22,7 +22,7 @@ LinTO-platform-punctuation can either be used as a standalone punctuation servic
 ## Pre-requisites
 
 ### Models
-The punctuation service relies on a trained punctuation prediction model.
+The punctuation service relies on a trained recasing and punctuation prediction model.
 
 We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
 
@@ -52,13 +52,13 @@ docker pull registry.linto.ai/lintoai/linto-platform-punctuation:latest
 
 **2- Download the models**
 
-Have the punctuation model (.mar) ready at MODEL_PATH.
+Have the punctuation model ready at MODEL_PATH.
 
 ### HTTP
 
 **1- Fill the .env**
 ```bash
-cp .env_default_http .env
+cp .env_default .env
 ```
 
 Fill the .env with your values.
@@ -73,7 +73,7 @@ Fill the .env with your values.
 
 ```bash
 docker run --rm \
--v MODEL_PATH:/usr/src/app/model-store/punctuation.mar \
+-v MODEL_PATH:/usr/src/app/model-store/model \
 -p HOST_SERVING_PORT:80 \
 --env-file .env \
 linto-platform-punctuation:latest
@@ -90,7 +90,7 @@ You need a message broker up and running at MY_SERVICE_BROKER. Instance are typi
 
 **1- Fill the .env**
 ```bash
-cp .env_default_task .env
+cp .env_default .env
 ```
 
 Fill the .env with your values.
@@ -118,7 +118,7 @@ services:
   punctuation-service:
     image: linto-platform-punctuation:latest
     volumes:
-      - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/punctuation.mar
+      - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/model
     env_file: .env
     deploy:
       replicas: 1
@@ -156,7 +156,7 @@ The following information are registered:
   "service_language": $LANGUAGE,
   "queue_name": $QUEUE_NAME,
   "version": "1.2.0", # This repository's version
-  "info": "Bert Based Punctuation model for french punctuation prediction",
+  "info": "Punctuation model for french punctuation prediction",
   "last_alive": 65478213,
   "concurrency": 1
 }
@@ -223,3 +223,6 @@ curl -X POST "http://YOUR_SERVICE:YOUR_PORT/punctuation" -H  "accept: applicatio
 
 ## License
 This project is developped under the AGPLv3 License (see LICENSE).
+
+## Acknowledgments
+* [recasepunc](https://github.com/benob/recasepunc) Python library to train recasing and punctuation models, and to apply them (License BSD 3).

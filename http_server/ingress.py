@@ -3,15 +3,21 @@
 import json
 import logging
 
-import requests
+import time
 from confparser import createParser
 from flask import Flask, json, request
-from serving import GunicornServing
+from serving import GeventServing as Serving
 from swagger import setupSwaggerUI
 
 from punctuation import logger
+from punctuation.recasepunc import load_model, generate_predictions
 
 app = Flask("__punctuation-worker__")
+
+logger.info("Loading model")
+tic = time.time()
+MODEL = load_model()
+logger.info("Model loaded in {}s".format(time.time() - tic))
 
 
 @app.route("/healthcheck", methods=["GET"])
@@ -38,35 +44,10 @@ def punctuate():
         if not sentences:
             return "", 200
 
-        # Fetch model name
-        try:
-            result = requests.get(
-                "http://localhost:8081/models",
-                headers={
-                    "accept": "application/json",
-                },
-            )
-            models = json.loads(result.text)
-            model_name = models["models"][0]["modelName"]
-        except:
-            raise Exception("Failed to fetch model name")
+        tic = time.time()
+        punctuated_sentences = generate_predictions(MODEL, sentences)
+        logger.info("Prediction done in {}s".format(time.time() - tic))
 
-        punctuated_sentences = []
-        for sentence in sentences:
-            result = requests.post(
-                "http://localhost:8080/predictions/{}".format(model_name),
-                headers={"content-type": "application/octet-stream"},
-                data=sentence.strip().encode("utf-8"),
-            )
-            if result.status_code == 200:
-                punctuated_sentence = result.text
-                # First letter in capital
-                punctuated_sentence = (
-                    punctuated_sentence[0].upper() + punctuated_sentence[1:]
-                )
-                punctuated_sentences.append(punctuated_sentence)
-            else:
-                raise Exception(result.text)
         if return_json:
             return {"punctuated_sentences": punctuated_sentences}, 200
 
@@ -110,7 +91,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.warning("Could not setup swagger: {}".format(str(e)))
 
-    serving = GunicornServing(
+    serving = Serving(
         app,
         {
             "bind": f"0.0.0.0:{args.service_port}",
