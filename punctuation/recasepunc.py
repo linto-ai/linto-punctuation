@@ -242,8 +242,7 @@ mapped_punctuation = {
     '“': 'O',
     '”': 'O',
     '"': 'O',
-    '-': 'O',
-    '-': 'O',
+    #'-': 'O', # hyphen is a word piece
     '〉': 'COMMA',
     '〈': 'COMMA',
     '↑': 'O',
