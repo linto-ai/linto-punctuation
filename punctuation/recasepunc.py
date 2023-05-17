@@ -3,11 +3,10 @@
 """recasepunc file."""
 
 import argparse
-import collections
 import os
 import random
 import sys
-import unicodedata
+import re
 
 import numpy as np
 import torch
@@ -201,6 +200,8 @@ def generate_predictions(config, line):
                     output += cased_token + punctuation_syms[punc_label]
     if previous_label == 0:
         output += '.'
+    # Glue apostrophes back to words
+    output = re.sub(r"(\w) *' *(\w)", r"\1'\2", output)
     return output
 
 mapped_punctuation = {
