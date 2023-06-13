@@ -24,7 +24,18 @@ LinTO-platform-punctuation can either be used as a standalone punctuation servic
 ### Models
 The punctuation service relies on a trained recasing and punctuation prediction model.
 
-We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
+Some models trained on [Common Crawl](http://data.statmt.org/cc-100/) are available on [recasepunc](https://github.com/benob/recasepunc) for the following the languages:
+* French
+  * [fr-txt.large.19000](https://github.com/benob/recasepunc/releases/download/0.3/fr-txt.large.19000)
+  * [fr.22000](https://github.com/benob/recasepunc/releases/download/0.3/fr.22000)
+* English
+  * [en.23000](https://github.com/benob/recasepunc/releases/download/0.3/en.23000)
+* Italian
+  * [it.22000](https://github.com/CoffeePerry/recasepunc/releases/download/v0.1.0/it.22000)
+* Chinese
+  * [zh.24000](https://github.com/benob/recasepunc/releases/download/0.3/zh.24000)
+
+<!-- We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/). -->
 
 ### Docker
 The punctuation service requires docker up and running.
