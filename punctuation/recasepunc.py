@@ -151,6 +151,7 @@ def generate_predictions(config, line, ignore_disfluencies=False):
     # also drop punctuation that we may generate
     line = ''.join([c for c in line if c not in mapped_punctuation])
     if ignore_disfluencies:
+        # TODO: fix when there are several disfluencies in a row ("euh euh")
         line = collapse_whitespace(line)
         line = re.sub(r"(\w) *' *(\w)", r"\1'\2", line) # glue apostrophes to words
         disfluencies, line = remove_simple_disfluences(line)
@@ -424,7 +425,7 @@ def remove_simple_disfluences(text, language=None):
     disfluencies = DISFLUENCIES.get(language, [])
     all_hits = []
     for disfluency in disfluencies:
-        all_hits += re.finditer(r" *"+disfluency+r" *", text)
+        all_hits += re.finditer(r" *\b"+disfluency+r"\b *", text)
     all_hits = sorted(all_hits, key=lambda x: x.start())
     to_be_inserted = [(hit.start(), hit.group()) for hit in all_hits]
     new_text = text
