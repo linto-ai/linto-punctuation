@@ -40,6 +40,9 @@ Some models trained on [Common Crawl](http://data.statmt.org/cc-100/) are availa
 ### Docker
 The punctuation service requires docker up and running.
 
+For GPU capabilities, it is also needed to install
+[nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
 ### (micro-service) Service broker
 The punctuation only entry point in job mode are tasks posted on a REDIS message broker using [Celery](https://github.com/celery/celery). 
 
@@ -63,7 +66,7 @@ docker pull registry.linto.ai/lintoai/linto-platform-punctuation:latest
 
 **2- Download the models**
 
-Have the punctuation model ready at MODEL_PATH.
+Have the punctuation model ready at `<MODEL_PATH>`.
 
 ### HTTP
 
@@ -84,11 +87,13 @@ Fill the .env with your values.
 
 ```bash
 docker run --rm \
--v MODEL_PATH:/usr/src/app/model-store/model \
+-v <MODEL_PATH>:/usr/src/app/model-store/model \
 -p HOST_SERVING_PORT:80 \
 --env-file .env \
 linto-platform-punctuation:latest
 ```
+
+Also add ```--gpus all``` as an option to enable GPU capabilities.
 
 This will run a container providing an http API binded on the host HOST_SERVING_PORT port.
 

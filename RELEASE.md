@@ -1,3 +1,6 @@
+# 2.0.1
+- newer image for recasepunc, with GPU support
+
 # 2.0.0
 - Integration of recasepunc
 

@@ -5,8 +5,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         g++ \
-        openjdk-11-jre-headless \
         curl \
+        libtinfo5 \
         wget
 
 # Rust compiler for tokenizers
