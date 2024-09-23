@@ -1,6 +1,9 @@
 # 2.0.0
 - Integration of recasepunc
 
+# 1.1.1
+- Fix error on empty sentences
+
 # 1.1.0
 - Added service registration
 - Updated README
