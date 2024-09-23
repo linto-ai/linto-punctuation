@@ -22,12 +22,26 @@ LinTO-platform-punctuation can either be used as a standalone punctuation servic
 ## Pre-requisites
 
 ### Models
-The punctuation service relies on a trained punctuation prediction model.
+The punctuation service relies on a trained recasing and punctuation prediction model.
 
-We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/).
+Some models trained on [Common Crawl](http://data.statmt.org/cc-100/) are available on [recasepunc](https://github.com/benob/recasepunc) for the following the languages:
+* French
+  * [fr-txt.large.19000](https://github.com/benob/recasepunc/releases/download/0.3/fr-txt.large.19000)
+  * [fr.22000](https://github.com/benob/recasepunc/releases/download/0.3/fr.22000)
+* English
+  * [en.23000](https://github.com/benob/recasepunc/releases/download/0.3/en.23000)
+* Italian
+  * [it.22000](https://github.com/CoffeePerry/recasepunc/releases/download/v0.1.0/it.22000)
+* Chinese
+  * [zh.24000](https://github.com/benob/recasepunc/releases/download/0.3/zh.24000)
+
+<!-- We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/). -->
 
 ### Docker
 The punctuation service requires docker up and running.
+
+For GPU capabilities, it is also needed to install
+[nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
 
 ### (micro-service) Service broker
 The punctuation only entry point in job mode are tasks posted on a REDIS message broker using [Celery](https://github.com/celery/celery). 
@@ -52,13 +66,13 @@ docker pull registry.linto.ai/lintoai/linto-platform-punctuation:latest
 
 **2- Download the models**
 
-Have the punctuation model (.mar) ready at MODEL_PATH.
+Have the punctuation model ready at `<MODEL_PATH>`.
 
 ### HTTP
 
 **1- Fill the .env**
 ```bash
-cp .env_default_http .env
+cp .env_default .env
 ```
 
 Fill the .env with your values.
@@ -73,11 +87,13 @@ Fill the .env with your values.
 
 ```bash
 docker run --rm \
--v MODEL_PATH:/usr/src/app/model-store/punctuation.mar \
+-v <MODEL_PATH>:/usr/src/app/model-store/model \
 -p HOST_SERVING_PORT:80 \
 --env-file .env \
 linto-platform-punctuation:latest
 ```
+
+Also add ```--gpus all``` as an option to enable GPU capabilities.
 
 This will run a container providing an http API binded on the host HOST_SERVING_PORT port.
 
@@ -90,7 +106,7 @@ You need a message broker up and running at MY_SERVICE_BROKER. Instance are typi
 
 **1- Fill the .env**
 ```bash
-cp .env_default_task .env
+cp .env_default .env
 ```
 
 Fill the .env with your values.
@@ -118,7 +134,7 @@ services:
   punctuation-service:
     image: linto-platform-punctuation:latest
     volumes:
-      - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/punctuation.mar
+      - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/model
     env_file: .env
     deploy:
       replicas: 1
@@ -156,7 +172,7 @@ The following information are registered:
   "service_language": $LANGUAGE,
   "queue_name": $QUEUE_NAME,
   "version": "1.2.0", # This repository's version
-  "info": "Bert Based Punctuation model for french punctuation prediction",
+  "info": "Punctuation model for french punctuation prediction",
   "last_alive": 65478213,
   "concurrency": 1
 }
@@ -223,3 +239,6 @@ curl -X POST "http://YOUR_SERVICE:YOUR_PORT/punctuation" -H  "accept: applicatio
 
 ## License
 This project is developped under the AGPLv3 License (see LICENSE).
+
+## Acknowledgments
+* [recasepunc](https://github.com/benob/recasepunc) Python library to train recasing and punctuation models, and to apply them (License BSD 3).

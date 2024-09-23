@@ -1,3 +1,6 @@
+# 2.0.1
+- Integration of recasepunc
+
 # 1.1.0
 - Added service registration
 - Updated README
