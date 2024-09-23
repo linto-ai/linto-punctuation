@@ -5,8 +5,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         g++ \
+        openjdk-11-jre-headless \
         curl \
-        libtinfo5 \
         wget
 
 # Rust compiler for tokenizers
@@ -16,8 +16,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 WORKDIR /usr/src/app
 
 # Python dependencies
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+COPY requirements.cpu.txt .
+RUN pip3 install --no-cache-dir -r requirements.cpu.txt -f https://download.pytorch.org/whl/torch_stable.html
 
 # Supervisor
 COPY celery_app /usr/src/app/celery_app

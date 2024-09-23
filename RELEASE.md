@@ -1,3 +1,6 @@
+# 2.0.0
+- Integration of recasepunc
+
 # 1.1.1
 - Fix error on empty sentences
 
