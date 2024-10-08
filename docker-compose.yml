@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   punctuation-service:
-    image: linto-platform-punctuation:latest
+    image: linto-punctuation:latest
     volumes:
       - /path/to/your/model.mar/usr/src/app/model-store/model
     env_file: .env
