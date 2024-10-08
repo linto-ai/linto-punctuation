@@ -1,7 +1,7 @@
-# LINTO-PLATFORM-PUNCTUATION
-LinTO-platform-punctuation is a LinTO service for punctuation prediction. It predicts punctuation from raw text or raw transcription.
+# LINTO-PUNCTUATION
+LinTO-Punctuation is a LinTO service for punctuation prediction. It predicts punctuation from raw text or raw transcription.
 
-LinTO-platform-punctuation can either be used as a standalone punctuation service or deployed as a micro-service.
+LinTO-Punctuation can either be used as a standalone punctuation service or deployed as a micro-service.
 
 ## Table of content
 * [Prerequisites](#pre-requisites)
@@ -47,21 +47,21 @@ For GPU capabilities, it is also needed to install
 The punctuation only entry point in job mode are tasks posted on a REDIS message broker using [Celery](https://github.com/celery/celery). 
 
 ## Deploy
-linto-platform-punctuation can be deployed two different ways:
+linto-punctuation can be deployed two different ways:
 * As a standalone punctuation service through an HTTP API.
 * As a micro-service connected to a task queue.
 
 **1- First step is to build the image:**
 
 ```bash
-git clone https://github.com/linto-ai/linto-platform-punctuation.git
-cd linto-platform-punctuation
-docker build . -t linto-platform-punctuation:latest
+git clone https://github.com/linto-ai/linto-punctuation.git
+cd linto-punctuation
+docker build . -t linto-punctuation:latest
 ```
 
 or 
 ```bash
-docker pull registry.linto.ai/lintoai/linto-platform-punctuation:latest
+docker pull registry.linto.ai/lintoai/linto-punctuation:latest
 ```
 
 **2- Download the models**
@@ -90,7 +90,7 @@ docker run --rm \
 -v <MODEL_PATH>:/usr/src/app/model-store/model \
 -p HOST_SERVING_PORT:80 \
 --env-file .env \
-linto-platform-punctuation:latest
+linto-punctuation:latest
 ```
 
 Also add ```--gpus all``` as an option to enable GPU capabilities.
@@ -99,8 +99,8 @@ This will run a container providing an http API binded on the host HOST_SERVING_
 
 
 ### Micro-service
->LinTO-platform-punctuation can be deployed as a microservice. Used this way, the container spawn celery workers waiting for punctuation tasks on a dedicated task queue.
->LinTO-platform-punctuation in task mode requires a configured REDIS broker.
+>LinTO-Punctuation can be deployed as a microservice. Used this way, the container spawn celery workers waiting for punctuation tasks on a dedicated task queue.
+>LinTO-Punctuation in task mode requires a configured REDIS broker.
 
 You need a message broker up and running at MY_SERVICE_BROKER. Instance are typically deployed as services in a docker swarm using the docker compose command:
 
@@ -132,7 +132,7 @@ version: '3.7'
 
 services:
   punctuation-service:
-    image: linto-platform-punctuation:latest
+    image: linto-punctuation:latest
     volumes:
       - /my/path/to/models/punctuation.mar:/usr/src/app/model-store/model
     env_file: .env

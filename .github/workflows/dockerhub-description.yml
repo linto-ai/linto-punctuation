@@ -16,5 +16,5 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        repository: lintoai/linto-platform-punctuation
+        repository: lintoai/linto-punctuation
         readme-filepath: ./README.md

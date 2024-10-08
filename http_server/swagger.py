@@ -11,7 +11,7 @@ def setupSwaggerUI(app, args):
         args.swagger_prefix + args.swagger_url,
         args.swagger_path,
         config={  # Swagger UI config overrides
-            "app_name": "LinTO Platform Punctuation",
+            "app_name": "LinTO Punctuation",
             "spec": swagger_yml,
         },
     )
