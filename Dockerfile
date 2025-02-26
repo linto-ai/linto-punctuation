@@ -7,6 +7,7 @@ RUN apt-get update && \
         g++ \
         curl \
         libtinfo5 \
+        gosu \
         wget
 
 # Rust compiler for tokenizers
