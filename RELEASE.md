@@ -1,3 +1,6 @@
+# 2.1.0
+- Upgrade of recasepunc to version 0.4
+
 # 2.0.0
 - Integration of recasepunc
 
