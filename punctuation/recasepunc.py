@@ -48,7 +48,9 @@ default_flavors = {
     'en': 'bert-base-uncased',
     'zh': 'ckiplab/bert-base-chinese',
     'it': 'dbmdz/bert-base-italian-uncased',
-}
+    'zh-Hant': 'ckiplab/bert-base-chinese',
+    'zh-Hans': 'ckiplab/bert-base-chinese',
+ }
 
 
 class Config(argparse.Namespace):
@@ -151,6 +153,8 @@ def load_model(checkpoint_path="/usr/src/app/model-store/model", config=None):
 
     if config.flavor is None:
         config.flavor = default_flavors[config.lang]
+
+    print(f"Using flavor {config.flavor}") # TODO: use logger.info
 
     init(config)
 
@@ -427,6 +431,10 @@ def bpe(self, token):
     self.cache[token] = word
     return word
 
+# Avoid an exception "AttributeError: Can't get attribute 'WordpieceTokenizer' on <module '__main__' from '/usr/src/app/http_server/ingress.py'>"
+import sys
+sys.modules["__main__"].WordpieceTokenizer = WordpieceTokenizer
+sys.modules["__main__"].bpe = bpe
 
 def init(config):
     init_random(config.seed)
