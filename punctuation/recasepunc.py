@@ -1,4 +1,15 @@
 # coding=utf-8
+# Copyright 2021 Benoit Favre
+# 
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+# 
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """recasepunc file."""
 
@@ -7,6 +18,7 @@ import os
 import random
 import sys
 import re
+import json
 
 import numpy as np
 import torch
@@ -36,7 +48,9 @@ default_flavors = {
     'en': 'bert-base-uncased',
     'zh': 'ckiplab/bert-base-chinese',
     'it': 'dbmdz/bert-base-italian-uncased',
-}
+    'zh-Hant': 'ckiplab/bert-base-chinese',
+    'zh-Hans': 'ckiplab/bert-base-chinese',
+ }
 
 
 class Config(argparse.Namespace):
@@ -121,19 +135,35 @@ def recase(token, label):
 def load_model(checkpoint_path="/usr/src/app/model-store/model", config=None):
     if config is None:
         config = default_config
-    if not torch.cuda.is_available():
-        config.device = 'cpu'
 
-    loaded = torch.load(checkpoint_path, map_location=config.device)
+    device = os.environ.get("DEVICE")
+    if device is None:
+        if torch.cuda.is_available():
+            config.device = 'cuda'
+        else:
+            config.device = 'cpu'
+    else:
+        config.device = device
+
+    print(f"Loading recasepunc model from {checkpoint_path} on device={config.device}") # TODO: use logger.info
+
+    loaded = torch.load(checkpoint_path, map_location=config.device, weights_only=False)
     if 'config' in loaded:
         config = Config(**loaded['config'])
 
     if config.flavor is None:
         config.flavor = default_flavors[config.lang]
 
+    print(f"Using flavor {config.flavor}") # TODO: use logger.info
+
     init(config)
 
     model = Model(config.flavor, config.device)
+
+    # This disappeared in recent versions
+    loaded['model_state_dict'].pop("bert.position_ids", None)
+    loaded['model_state_dict'].pop("bert.embeddings.position_ids", None)
+
     model.load_state_dict(loaded['model_state_dict'])
 
     config.model = model
@@ -143,18 +173,45 @@ def load_model(checkpoint_path="/usr/src/app/model-store/model", config=None):
 
 def generate_predictions(config, line, ignore_disfluencies=False):
     if isinstance(line, list):
-        return [generate_predictions(config, l) for l in line]
+        return [generate_predictions(config, l, ignore_disfluencies=ignore_disfluencies) for l in line]
+    
+    if isinstance(line, dict):
+        new_dict = line.copy()
+        assert "text" in line
+        line = line["text"]
+        line = generate_predictions(config, line, ignore_disfluencies=ignore_disfluencies)
+        new_dict["text"] = line
+        return new_dict
+
+    assert isinstance(line, str)
+    line = line.strip()
+
+    if line.startswith("{") and line.endswith("}"):
+        # A dict inside a string
+        line = json.loads(line)
+        assert isinstance(line, dict)
+        return json.dumps(generate_predictions(config, line, ignore_disfluencies=ignore_disfluencies), indent=2, ensure_ascii=False)
+    
+    if not line:
+        # Avoid hanging on empty lines
+        return ""
+
+    if config is None:
+        return line
 
     model = config.model
     set_seed(config.seed)
 
-    # also drop punctuation that we may generate
+    # Drop all punctuation that can be generated
     line = ''.join([c for c in line if c not in mapped_punctuation])
+
+    # Relevant only if disfluences annotations
     if ignore_disfluencies:
         # TODO: fix when there are several disfluencies in a row ("euh euh")
         line = collapse_whitespace(line)
         line = re.sub(r"(\w) *' *(\w)", r"\1'\2", line) # glue apostrophes to words
         disfluencies, line = remove_simple_disfluences(line)
+
     output = ''
     if config.debug:
         print(line)
@@ -379,6 +436,10 @@ def bpe(self, token):
     self.cache[token] = word
     return word
 
+# Avoid an exception "AttributeError: Can't get attribute 'WordpieceTokenizer' on <module '__main__' from '/usr/src/app/http_server/ingress.py'>"
+import sys
+sys.modules["__main__"].WordpieceTokenizer = WordpieceTokenizer
+sys.modules["__main__"].bpe = bpe
 
 def init(config):
     init_random(config.seed)
@@ -387,7 +448,8 @@ def init(config):
         config.tokenizer = tokenizer = AutoTokenizer.from_pretrained(config.flavor, do_lower_case=False)
 
         from transformers.models.xlm.tokenization_xlm import XLMTokenizer
-        assert isinstance(tokenizer, XLMTokenizer)
+        from transformers.models.flaubert.tokenization_flaubert import FlaubertTokenizer
+        assert isinstance(tokenizer, XLMTokenizer) or isinstance(tokenizer, FlaubertTokenizer)
 
         # monkey patch XLM tokenizer
         import types

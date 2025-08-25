@@ -1,3 +1,7 @@
+# 2.1.0
+- Upgrade of recasepunc to version 0.4
+- Environment Variable DEVICE to choose the device
+
 # 2.0.0
 - Integration of recasepunc
 

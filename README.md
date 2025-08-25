@@ -26,14 +26,17 @@ The punctuation service relies on a trained recasing and punctuation prediction 
 
 Some models trained on [Common Crawl](http://data.statmt.org/cc-100/) are available on [recasepunc](https://github.com/benob/recasepunc) for the following the languages:
 * French
-  * [fr-txt.large.19000](https://github.com/benob/recasepunc/releases/download/0.3/fr-txt.large.19000)
-  * [fr.22000](https://github.com/benob/recasepunc/releases/download/0.3/fr.22000)
+  * [fr.24000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/fr.24000)
+  * [fr-txt.large.19000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/fr-txt.large.19000)
 * English
-  * [en.23000](https://github.com/benob/recasepunc/releases/download/0.3/en.23000)
+  * [en.22000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/en.22000)
+  * [en.23000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/en.23000)
 * Italian
-  * [it.22000](https://github.com/CoffeePerry/recasepunc/releases/download/v0.1.0/it.22000)
+  * [it.23000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/it.23000)
+  * [it.22000 (v0.3)](https://github.com/CoffeePerry/recasepunc/releases/download/v0.1.0/it.22000)
 * Chinese
-  * [zh.24000](https://github.com/benob/recasepunc/releases/download/0.3/zh.24000)
+  * [zh-Hant.17000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/zh-Hant.17000)
+  * [zh.24000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/zh.24000)
 
 <!-- We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/). -->
 
@@ -80,6 +83,7 @@ Fill the .env with your values.
 **Parameters:**
 | Variables | Description | Example |
 |:-|:-|:-|
+| DEVICE | Device to use for the model (by default, GPU/CUDA is used if it is available, CPU otherwise) | `cpu` \| `cuda` |
 | SERVICE_NAME | The service's name | my_punctuation_service |
 | CONCURRENCY | Number of worker | > 1 |
 
@@ -118,6 +122,7 @@ Fill the .env with your values.
 | BROKER_PASS | Service broker password (Leave empty if there is no password) | my_password |
 | QUEUE_NAME | (Optionnal) overide the generated queue's name (See Queue name bellow) | my_queue |
 | SERVICE_NAME | Service's name | punctuation-ml |
+| DEVICE | Device to use for the model (by default, GPU/CUDA is used if it is available, CPU otherwise) | `cpu` \| `cuda` |
 | LANGUAGE | Language code as a BCP-47 code | en-US or * or languages separated by "\|" |
 | MODEL_INFO | Human readable description of the model | "Bert based model for french punctuation prediction" | 
 | CONCURRENCY | Number of worker (1 worker = 1 cpu) | >1 |
