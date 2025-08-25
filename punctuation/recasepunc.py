@@ -140,6 +140,8 @@ def load_model(checkpoint_path="/usr/src/app/model-store/model", config=None):
             config.device = 'cuda'
         else:
             config.device = 'cpu'
+    else:
+        config.device = device
 
     print(f"Loading recasepunc model from {checkpoint_path} on device={config.device}") # TODO: use logger.info
 
