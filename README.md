@@ -26,13 +26,17 @@ The punctuation service relies on a trained recasing and punctuation prediction 
 
 Some models trained on [Common Crawl](http://data.statmt.org/cc-100/) are available on [recasepunc](https://github.com/benob/recasepunc) for the following the languages:
 * French
-  * [fr.24000](https://github.com/benob/recasepunc/releases/download/0.4/fr.24000)
+  * [fr.24000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/fr.24000)
+  * [fr-txt.large.19000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/fr-txt.large.19000)
 * English
-  * [en.22000](https://github.com/benob/recasepunc/releases/download/0.4/en.22000)
+  * [en.22000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/en.22000)
+  * [en.23000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/en.23000)
 * Italian
-  * [it.23000](https://github.com/benob/recasepunc/releases/download/0.4/it.23000)
+  * [it.23000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/it.23000)
+  * [it.22000 (v0.3)](https://github.com/CoffeePerry/recasepunc/releases/download/v0.1.0/it.22000)
 * Chinese
-  * [zh-Hant.17000](https://github.com/benob/recasepunc/releases/download/0.4/zh-Hant.17000)
+  * [zh-Hant.17000 (v0.4)](https://github.com/benob/recasepunc/releases/download/0.4/zh-Hant.17000)
+  * [zh.24000 (v0.3)](https://github.com/benob/recasepunc/releases/download/0.3/zh.24000)
 
 <!-- We provide homebrew models on [dl.linto.ai](https://dl.linto.ai/downloads/model-distribution/punctuation_models/). -->
 

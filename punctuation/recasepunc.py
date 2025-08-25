@@ -159,6 +159,11 @@ def load_model(checkpoint_path="/usr/src/app/model-store/model", config=None):
     init(config)
 
     model = Model(config.flavor, config.device)
+
+    # This disappeared in recent versions
+    loaded['model_state_dict'].pop("bert.position_ids", None)
+    loaded['model_state_dict'].pop("bert.embeddings.position_ids", None)
+
     model.load_state_dict(loaded['model_state_dict'])
 
     config.model = model
