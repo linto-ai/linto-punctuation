@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.9-bookworm
 LABEL maintainer="contact@linto.ai"
 
 RUN apt-get update && \
